@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #0078d4;
+            color: white;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fafafa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #0078d4;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: #333;
+            margin-right: auto;
+        }
+        .chat-footer {
+            padding: 10px 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            background: white;
+        }
+        #question-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        #send-button {
+            padding: 10px 20px;
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #send-button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            Medical Chatbot
+        </div>
+        <div class="chat-body" id="chat-output">
+            <div class="message bot-message">
+                Hello! I'm your medical assistant. Ask me anything about treatments or conditions.
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="question-input" placeholder="Type your question here...">
+            <button id="send-button" onclick="sendQuestion()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function sendQuestion() {
+            const input = document.getElementById("question-input");
+            const question = input.value.trim();
+            if (!question) return;
+
+            const output = document.getElementById("chat-output");
+            const userMessage = document.createElement("div");
+            userMessage.className = "message user-message";
+            userMessage.textContent = question;
+            output.appendChild(userMessage);
+
+            fetch("/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question: question }) // ✅ Correct key name
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMessage = document.createElement("div");
+                botMessage.className = "message bot-message";
+                botMessage.textContent = data.response; // ✅ Correct response key
+                output.appendChild(botMessage);
+                output.scrollTop = output.scrollHeight;
+            })
+            .catch(error => console.error("Error:", error));
+
+            input.value = "";
+        }
+
+        document.getElementById("question-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") sendQuestion();
+        });
+    </script>
+</body>
+</html>
